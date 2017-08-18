@@ -16,36 +16,17 @@ import java.util.HashMap;
  */
 public class HaxeDeserializer {
 
-	/**
-	 This value can be set to use custom type resolvers.
-	 A type resolver finds a `Class` or `Enum` instance from a given `String`.
-	 By default, the Haxe `Type` Api is used.
-	 A type resolver must provide two methods:
-	 1. `resolveClass(name:String):Class<Dynamic>` is called to determine a
-	 `Class` from a class name
-	 2. `resolveEnum(name:String):Enum<Dynamic>` is called to determine an
-	 `Enum` from an enum name
-	 This value is applied when a new `Unserializer` instance is created.
-	 Changing it afterwards has no effect on previously created instances.
-	 **/
 	public static TypeResolver DEFAULT_RESOLVER  = new TypeResolver();
 
 	private static String BASE64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789%:";
 
-	private StringBuffer buf ;
+	private StringBuffer buf;
 	private int pos;
 	private int length;
 	private ArrayList<Object> cache;
 	private ArrayList<String> scache;
 	private TypeResolver resolver;
 
-	/**
-	 Creates a new Unserializer instance, with its internal buffer
-	 initialized to `buf`.
-	 This does not parse `buf` immediately. It is parsed only when calls to
-	 `this.deserialize` are made.
-	 Each Unserializer instance maintains its own cache.
-	 **/
 	public HaxeDeserializer(StringBuffer buf) {
 		this.buf = buf;
 		length = buf.length();
@@ -55,20 +36,10 @@ public class HaxeDeserializer {
 		resolver = DEFAULT_RESOLVER;
 	}
 
-	/**
-	 Sets the type resolver of `this` Unserializer instance to `r`.
-	 If `r` is null, a special resolver is used which returns null for all
-	 input values.
-	 See `DEFAULT_RESOLVER` for more information on type resolvers.
-	 **/
 	public void setResolver(TypeResolver value ) {
 		resolver = value;
 	}
 
-	/**
-	 Gets the type resolver of `this` Unserializer instance.
-	 See `DEFAULT_RESOLVER` for more information on type resolvers.
-	 **/
 	public TypeResolver getResolver() {
 		return resolver;
 	}
@@ -133,6 +104,7 @@ public class HaxeDeserializer {
 			}
 			if( get(pos) == 'g')
 				break;
+			pos++;
 			String fieldName  = readString();
 			if( !(fieldName instanceof String) )
 				throw new Exception("Invalid object key");
@@ -159,8 +131,10 @@ public class HaxeDeserializer {
 
 	private String readString() throws Exception {
 		int stringLength = readInteger();
-		if( get(pos++) != ':' || length - pos < stringLength )
-			throw new Exception("Invalid string length");
+		if( get(pos++) != ':')
+			throw new Exception(buf.toString() + "\nDeserilization exception. Position " + pos + " ':' expected");
+		if (length - pos < stringLength)
+			throw new Exception(buf.toString() + "\nDeserilization exception. Position " + pos + " String longer then input");
 		String result = buf.substring(pos, pos + stringLength);
 		pos += stringLength;
 		result = java.net.URLDecoder.decode(result, "UTF-8");
@@ -190,22 +164,6 @@ public class HaxeDeserializer {
 		return result;
 	}
 
-	/**
-	 Unserializes the next part of `this` Unserializer instance and returns
-	 the according value.
-	 This function may call `this.resolver.resolveClass` to determine a
-	 Class from a String, and `this.resolver.resolveEnum` to determine an
-	 Enum from a String.
-	 If `this` Unserializer instance contains no more or invalid data, an
-	 exception is thrown.
-	 This operation may fail on structurally valid data if a type cannot be
-	 resolved or if a field cannot be set. This can happen when unserializing
-	 Strings that were serialized on a different Haxe target, in which the
-	 serialization side has to make sure not to include platform-specific
-	 data.
-	 Classes are created from `Type.createEmptyInstance`, which means their
-	 constructors are not called.
-	 **/
 	public Object deserialize() throws Exception {
 		switch( get(pos++) ) {
 			case 'n':
@@ -231,9 +189,30 @@ public class HaxeDeserializer {
 			case 'a':
 				return readArray();
 			case 'o':
-				Object o = new Object();
+				HashMap o = new HashMap<String, Object>();
 				cache.add(o);
-				unserializeObject(o);
+				while( true ) {
+					if(isEof(pos)) {
+						throw new Exception("\nDeserilization exception. Unexpected EoL");
+					}
+					char marker = get(pos);
+					if( marker == 'g') {
+						pos++;
+						break;
+					}
+					String fieldName = null;
+					if (marker == 'y') {
+						pos++;
+						fieldName = readString();
+					} else if (marker == 'R') {
+						pos++;
+						fieldName = readStringCashReference();
+					}
+					if (fieldName == null)
+						throw new Exception("\n" + buf.toString() + "\nDeserilization exception. Position " + pos + ". Object field is NULL. Marker '" + marker + " has been found.");
+					Object fieldValue = deserialize();
+					o.put(fieldName, fieldValue);
+				}
 				return o;
 			case 'r':
 				return readObjectCashReference();
@@ -424,10 +403,9 @@ public class HaxeDeserializer {
 	}
 
 	private Object readArray() throws Exception {
-		int startPosition = pos;
-		ArrayList<Object> a = new ArrayList<Object>();
+		ArrayList<Object> arrayList = new ArrayList<Object>();
 		Object firstNotNullElement = null;
-		cache.add(a);
+		cache.add(arrayList);
 		while( true ) {
 			char c = get(pos);
 			if( c == 'h') {
@@ -437,19 +415,17 @@ public class HaxeDeserializer {
 			if( c == 'u') {
 				pos++;
 				int n = readInteger();
-				a.set(a.size()+n-1, null);
+				arrayList.set(arrayList.size()+n-1, null);
 			} else {
 				if (firstNotNullElement == null) {
 					firstNotNullElement = deserialize();
-					a.add(firstNotNullElement);
+					arrayList.add(firstNotNullElement);
 				} else {
-					a.add(deserialize());
+					arrayList.add(deserialize());
 				}
 			}
 		}
-
-		int n = a.size();
-		pos = startPosition;
+		int n = arrayList.size();
 		if (n > 0 && firstNotNullElement != null) {
 			Class<?> c = firstNotNullElement.getClass();
 			if (c.equals(Integer.class)) {
@@ -458,13 +434,13 @@ public class HaxeDeserializer {
 				c = float.class;
 			}
 			Object result = Array.newInstance(c, n);
-			for (int i = 0; i < a.size(); i++) {
-				Array.set(result, i, a.get(i));
+			for (int i = 0; i < arrayList.size(); i++) {
+				Array.set(result, i, arrayList.get(i));
 			}
 			return result;
 		}
 
-		return a.toArray();
+		return arrayList.toArray();
 	}
 
 }
