@@ -36,12 +36,113 @@ public class HaxeDeserializer {
 		resolver = DEFAULT_RESOLVER;
 	}
 
-	public void setResolver(TypeResolver value ) {
-		resolver = value;
-	}
-
-	public TypeResolver getResolver() {
-		return resolver;
+	public Object deserialize() throws Exception {
+		switch( get(pos++) ) {
+			case 'n':
+				return null;
+			case 't':
+				return true;
+			case 'f':
+				return false;
+			case 'z':
+				return 0;
+			case 'i':
+				return readInteger();
+			case 'd':
+				return readFloat();
+			case 'y':
+				return readString();
+			case 'k':
+				return Float.NaN;
+			case 'm':
+				return Float.NEGATIVE_INFINITY;
+			case 'p':
+				return Float.POSITIVE_INFINITY;
+			case 'a':
+				return readArray();
+			case 'o':
+				HashMap o = new HashMap<String, Object>();
+				cache.add(o);
+				while( true ) {
+					if(isEof(pos)) {
+						throw new Exception("\nDeserilization exception. Unexpected EoL");
+					}
+					char marker = get(pos);
+					if( marker == 'g') {
+						pos++;
+						break;
+					}
+					String fieldName = null;
+					if (marker == 'y') {
+						pos++;
+						fieldName = readString();
+					} else if (marker == 'R') {
+						pos++;
+						fieldName = readStringCashReference();
+					}
+					if (fieldName == null)
+						throw new Exception("\n" + buf.toString() + "\nDeserilization exception. Position " + pos + ". Object field is NULL. Marker '" + marker + " has been found.");
+					Object fieldValue = deserialize();
+					o.put(fieldName, fieldValue);
+				}
+				return o;
+			case 'r':
+				return readObjectCashReference();
+			case 'R':
+				return readStringCashReference();
+			case 'x':
+				char marker = get(pos++);
+				if (marker == 'y') {
+					String message = readString();
+					throw new Exception(message);
+				} else {
+					throw new Exception("Invalid exception format");
+				}
+			case 'c':
+				return readClass();
+			case 'w':
+				return readNameEnum();
+			case 'j':
+				return readIndexEnum();
+			case 'l':
+				return readList();
+			case 'b':
+				HashMap<String, Object> stringHash = new HashMap<String, Object>();
+				cache.add(stringHash);
+				while( get(pos) != 'h') {
+					String stringKey = (String) deserialize();
+					stringHash.put(stringKey, deserialize());
+				}
+				pos++;
+				return stringHash;
+			case 'q':
+				HashMap<Integer, Object> intHash = new HashMap<Integer, Object>();
+				cache.add(intHash);
+				char c = get(pos++);
+				while(c == ':') {
+					int i = readInteger();
+					intHash.put(i, deserialize());
+					c = get(pos++);
+				}
+				if(c != 'h')
+					throw new Exception("Invalid IntMap format");
+				return intHash;
+			case 'M':
+				return readObjectMap();
+			case 'v':
+				return readDate();
+			case 's':
+				return readBytes();
+			case 'C':
+				return readC();
+			case 'A':
+				return readA();
+			case 'B':
+				return readB();
+			default:
+		}
+		pos--;
+		throw new Exception("Invalid char "+buf.charAt(pos)+" at position "+pos);
 	}
 
 	private char get(int position) {
@@ -49,6 +150,7 @@ public class HaxeDeserializer {
 			return 0;
 		return buf.charAt(position);
 	}
+
 	private boolean isEof(int pos) {
 		return pos >= length;
 	}
@@ -162,109 +264,6 @@ public class HaxeDeserializer {
 		result.setTime(d);
 		cache.add(result);
 		return result;
-	}
-
-	public Object deserialize() throws Exception {
-		switch( get(pos++) ) {
-			case 'n':
-				return null;
-			case 't':
-				return true;
-			case 'f':
-				return false;
-			case 'z':
-				return 0;
-			case 'i':
-				return readInteger();
-			case 'd':
-				return readFloat();
-			case 'y':
-				return readString();
-			case 'k':
-				return Float.NaN;
-			case 'm':
-				return Float.NEGATIVE_INFINITY;
-			case 'p':
-				return Float.POSITIVE_INFINITY;
-			case 'a':
-				return readArray();
-			case 'o':
-				HashMap o = new HashMap<String, Object>();
-				cache.add(o);
-				while( true ) {
-					if(isEof(pos)) {
-						throw new Exception("\nDeserilization exception. Unexpected EoL");
-					}
-					char marker = get(pos);
-					if( marker == 'g') {
-						pos++;
-						break;
-					}
-					String fieldName = null;
-					if (marker == 'y') {
-						pos++;
-						fieldName = readString();
-					} else if (marker == 'R') {
-						pos++;
-						fieldName = readStringCashReference();
-					}
-					if (fieldName == null)
-						throw new Exception("\n" + buf.toString() + "\nDeserilization exception. Position " + pos + ". Object field is NULL. Marker '" + marker + " has been found.");
-					Object fieldValue = deserialize();
-					o.put(fieldName, fieldValue);
-				}
-				return o;
-			case 'r':
-				return readObjectCashReference();
-			case 'R':
-				return readStringCashReference();
-			case 'x':
-				throw new Exception(readString());
-			case 'c':
-				return readClass();
-			case 'w':
-				return readNameEnum();
-			case 'j':
-				return readIndexEnum();
-			case 'l':
-				return readList();
-			case 'b':
-				HashMap<String, Object> stringHash = new HashMap<String, Object>();
-				cache.add(stringHash);
-				while( get(pos) != 'h') {
-					String stringKey = (String) deserialize();
-					stringHash.put(stringKey, deserialize());
-				}
-				pos++;
-				return stringHash;
-			case 'q':
-				HashMap<Integer, Object> intHash = new HashMap<Integer, Object>();
-				cache.add(intHash);
-				char c = get(pos++);
-				while(c == ':') {
-					int i = readInteger();
-					intHash.put(i, deserialize());
-					c = get(pos++);
-				}
-				if(c != 'h')
-					throw new Exception("Invalid IntMap format");
-				return intHash;
-			case 'M':
-				return readObjectMap();
-			case 'v':
-				return readDate();
-			case 's':
-				return readBytes();
-			case 'C':
-				return readC();
-			case 'A':
-				return readA();
-			case 'B':
-				return readB();
-			default:
-		}
-		pos--;
-		throw new Exception("Invalid char "+buf.charAt(pos)+" at position "+pos);
 	}
 
 	private Object readObjectCashReference() throws Exception {

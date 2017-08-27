@@ -1,4 +1,5 @@
-# haxe-network
+haxe-network
+============
 implementation of Haxe serialization protocol for java. Currently it support 
 serialization of primitive types and common classes supported both java and haxe i.e.
  * int
