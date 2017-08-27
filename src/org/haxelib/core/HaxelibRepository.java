@@ -1,6 +1,8 @@
 package org.haxelib.core;
 
 import org.haxelib.HaxelibConstants;
+import org.haxelib.core.data.CurrentVersion;
+import org.haxelib.core.data.HaxelibException;
 import org.haxelib.model.HaxelibEntity;
 import org.haxelib.model.HaxelibVersion;
 import org.haxelib.utils.KFile;
@@ -32,6 +34,17 @@ public class HaxelibRepository {
 	 */
 	public File getRepository() {
 		return _repository;
+	}
+	public void setRepository(File value) throws HaxelibException, IOException {
+		if (value.exists()) {
+			if (value.isDirectory())
+				_repository = value;
+			else if (value.isFile())
+				throw HaxelibException.ImposibleRepositoryDestination(value.getAbsolutePath());
+		} else {
+			value.mkdir();
+		}
+		_repository = value;
 	}
 
 

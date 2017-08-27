@@ -17,8 +17,8 @@
  */
 package org.haxelib.model;
 
-import org.haxelib.core.CurrentVersion;
-import org.haxelib.core.HaxelibException;
+import org.haxelib.core.data.CurrentVersion;
+import org.haxelib.core.data.HaxelibException;
 
 import java.io.File;
 import java.util.ArrayList;

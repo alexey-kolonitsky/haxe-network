@@ -1,4 +1,4 @@
-package org.haxelib.core;
+package org.haxelib.core.data;
 
 /**
  * Created by akalanitski on 25.08.2017.

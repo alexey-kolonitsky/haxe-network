@@ -1,4 +1,4 @@
-package org.haxelib.core;
+package org.haxelib.core.data;
 
 import java.text.MessageFormat;
 
@@ -11,6 +11,7 @@ public class HaxelibException extends Exception {
 	public static final String VERSION_NOT_INSTALLED = "Library ''{0}'' version ''{1}'' not installed";
 	public static final String VERSION_INVALID = "Current version of library ''{0}'' is invalid: ''{1}''";
 	public static final String VERSION_CONFLICT = "Library ''{0}'' has development and remote versions. Remote version will be ignored.";
+	public static final String REPOSITORY_DESTINATION_INVALID = "Error: A file is preventing {0} to be created";
 
 	public HaxelibException(String message) {
 		super(message);
@@ -31,6 +32,9 @@ public class HaxelibException extends Exception {
 	}
 	public static HaxelibException VersionConflict(String libraryName) {
 		return new HaxelibException(MessageFormat.format(VERSION_CONFLICT, libraryName));
+	}
+	public static HaxelibException ImposibleRepositoryDestination(String filename) {
+		return new HaxelibException(MessageFormat.format(REPOSITORY_DESTINATION_INVALID, filename));
 	}
 
 }

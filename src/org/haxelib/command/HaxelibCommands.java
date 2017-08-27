@@ -21,7 +21,7 @@ public class HaxelibCommands {
 	//---------------------------------
 
 	public static final String HAXELIB_SEARCH = "search";
-	public static final String HAXELIB_INFO = "get";
+	public static final String HAXELIB_INFO = "info";
 	public static final String HAXELIB_USER = "user";
 	public static final String HAXELIB_CONFIG = "config";
 	public static final String HAXELIB_PATH = "path";

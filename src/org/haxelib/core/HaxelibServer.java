@@ -1,8 +1,9 @@
-package org.haxelib.remote;
+package org.haxelib.core;
 
 import com.sun.tracing.dtrace.DependencyClass;
 import org.haxe.net.HaxeRemoteProxy;
 import org.haxelib.core.HaxelibProtocol;
+import org.haxelib.core.data.HaxelibUser;
 import org.haxelib.model.HaxelibDependency;
 import org.haxelib.model.HaxelibEntity;
 import org.haxelib.model.HaxelibVersion;
@@ -16,6 +17,7 @@ import java.net.ProtocolException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -80,6 +82,29 @@ public class HaxelibServer {
 		return in;
 	}
 
+
+	public HaxelibUser getUser(String userId) {
+		Object result = null;
+		try {
+			result = server.call(new String[]{"api", "user"}, new Object[]{userId});
+		} catch (Exception ex) {
+			System.out.print(ex.fillInStackTrace());
+		}
+		return createUser((HashMap<String, Object>) result);
+	}
+
+	private HaxelibUser createUser(HashMap<String, Object> result) {
+		HaxelibUser user = null;
+		if (result != null) {
+			user = new HaxelibUser();
+			user.id = (String) result.get("name");
+			user.name = (String) result.get("fullname");
+			user.email = (String) result.get("email");
+			user.libraries = (String[]) result.get("projects");
+		}
+		return user;
+	}
+
 	private HaxelibEntity createEntity(HashMap<String, Object> hm) {
 		HaxelibEntity entity = null;
 		if (hm != null) {
@@ -119,4 +144,5 @@ public class HaxelibServer {
 		}
 		return result;
 	}
+
 }

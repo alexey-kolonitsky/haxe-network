@@ -1,8 +1,7 @@
 package org.haxelib.command;
 
 import org.haxelib.HaxelibConstants;
-import org.haxelib.core.HaxelibException;
-import sun.util.resources.cldr.naq.CalendarData_naq_NA;
+import org.haxelib.core.data.HaxelibException;
 
 import java.text.MessageFormat;
 

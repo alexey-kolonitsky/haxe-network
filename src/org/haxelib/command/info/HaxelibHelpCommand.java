@@ -1,10 +1,7 @@
 package org.haxelib.command.info;
 
 import org.haxelib.HaxelibConstants;
-import org.haxelib.command.HaxelibBaseCommand;
-import org.haxelib.command.HaxelibCategories;
-import org.haxelib.command.HaxelibCommands;
-import org.haxelib.command.ICommand;
+import org.haxelib.command.*;
 
 import java.util.Calendar;
 import java.util.HashMap;
@@ -16,7 +13,7 @@ import java.util.HashMap;
 public class HaxelibHelpCommand extends HaxelibBaseCommand implements ICommand {
 
 	//Injected
-	public HashMap<String, ICommand> commandByNameMap;
+	public HaxelibCommandCollection commands;
 
 	public HaxelibHelpCommand() {
 		_name = HaxelibCommands.HAXELIB_HELP;
@@ -26,26 +23,31 @@ public class HaxelibHelpCommand extends HaxelibBaseCommand implements ICommand {
 
 	@Override
 	public void run(String[] arguments) {
-		String header = "{0} {1} - (c) 2017 - {2} {3} {4}";
+		String result = help();
+		println(result, null);
+	}
+
+	public String help() {
+		//Header
 		Calendar calendar = Calendar.getInstance();
-		println(header,new Object[]{
-			HaxelibConstants.APPLICATION_NAME,
-			HaxelibConstants.APPLICATION_VERSION,
-			calendar.get(Calendar.YEAR),
-			HaxelibConstants.APPLICATION_AUTHOR,
-			HaxelibConstants.APPLICATION_AUTHOR_EMAIL});
-		println("Usage: haxelib [command] [options]", null);
+		String result = HaxelibConstants.APPLICATION_NAME + " " + HaxelibConstants.APPLICATION_VERSION + " - "
+			+ "(c) 2017 - " + calendar.get(Calendar.YEAR)
+			+ " " + HaxelibConstants.APPLICATION_AUTHOR + " " + HaxelibConstants.APPLICATION_AUTHOR_EMAIL;
+		result += "\n  Usage: haxelib [command] [options]";
+		//Commands by categories
 		String category = "";
-		if (commandByNameMap != null) {
-			for (ICommand command : commandByNameMap.values()) {
+		if (commands != null) {
+			for (int i = 0; i < commands.numCommand(); i++) {
+				ICommand command = commands.getCommandAt(i);
 				boolean isNewCategory = !category.equals(command.getCategory());
 				if (isNewCategory) {
 					category = command.getCategory();
-					println(category + ":", null);
+					result += "\n  " + category;
 				}
-				println("\t" + command.getName() + "\t: " + command.getDescription(), null);
+				result += "\n    " + String.format("%-9s : %s", command.getName(), command.getDescription());
 			}
 		}
+		return result;
 	}
 
 

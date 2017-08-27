@@ -4,7 +4,7 @@ import org.haxelib.command.HaxelibBaseCommand;
 import org.haxelib.command.HaxelibCategories;
 import org.haxelib.command.HaxelibCommands;
 import org.haxelib.command.ICommand;
-import org.haxelib.core.CurrentVersion;
+import org.haxelib.core.data.CurrentVersion;
 import org.haxelib.core.HaxelibRepository;
 import org.haxelib.model.HaxelibEntity;
 import org.haxelib.model.HaxelibVersion;

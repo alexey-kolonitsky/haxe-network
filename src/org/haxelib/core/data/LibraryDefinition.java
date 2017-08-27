@@ -1,4 +1,4 @@
-package org.haxelib.core;
+package org.haxelib.core.data;
 
 import java.util.ArrayList;
 

@@ -18,11 +18,15 @@ public class HaxelibVersionCommand extends HaxelibBaseCommand implements IComman
 	public HaxelibVersionCommand() {
 		_name = HaxelibCommands.HAXELIB_VERSION;
 		_category = HaxelibCategories.INFO;
-		_description = "display this list of options";
+		_description = "print the currently using haxelib version";
 	}
 
 	@Override
 	public void run(String[] arguments) {
 		println(HaxelibConstants.APPLICATION_VERSION, null);
+	}
+
+	public String version() {
+		return null;
 	}
 }

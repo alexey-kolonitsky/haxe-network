@@ -1,6 +1,8 @@
+package org.haxelib.cli;
 
 import org.haxelib.core.HaxelibRepository;
-import org.haxelib.core.HaxelibException;
+import org.haxelib.core.HaxelibServer;
+import org.haxelib.core.data.HaxelibException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -26,6 +28,11 @@ public class CommandBaseTest {
 			System.out.println("IO ERROR: " + ioException);
 		}
 		return core;
+	}
+
+	public HaxelibServer createService() {
+		HaxelibServer server = new HaxelibServer("lib.haxe.org", "80", "", "3.0", "index.n");
+		return server;
 	}
 
 	public String exec(String... arguments) throws IOException {

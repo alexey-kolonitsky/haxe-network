@@ -1,4 +1,6 @@
-import org.haxelib.command.basics.HaxelibListCommand;
+package org.haxelib.cli.info;
+
+import org.haxelib.cli.CommandBaseTest;
 import org.haxelib.command.info.HaxelibConfigCommand;
 import org.junit.Test;
 

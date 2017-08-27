@@ -1,41 +1,20 @@
-package org.haxelib;
+package org.haxelib.cli.info;
 
+import org.haxelib.cli.CommandBaseTest;
 import org.haxelib.command.HaxelibCommandCollection;
-import org.haxelib.command.HaxelibCommands;
 import org.haxelib.command.advanced.HaxelibSetupCommand;
 import org.haxelib.command.basics.*;
 import org.haxelib.command.info.*;
-import org.haxelib.controller.HaxelibController;
+import org.junit.Test;
 
-import java.util.Arrays;
+import static junit.framework.Assert.assertEquals;
 
 /**
- * Created by akalanitski on 07.08.2017.
+ * Created by akalanitski on 27.08.2017.
  */
-public class HaxelibClient {
+public class HaxelibHelpCommandTest extends CommandBaseTest {
 
-	public static HaxelibController controller = null;
-
-	public static void main(String[] args) throws Exception {
-		initilizeController();
-		runCommand(args);
-	}
-
-	private static void runCommand(String[] args) {
-		int n = args.length;
-		if (args == null || n == 0) {
-			controller.runCommand(HaxelibCommands.HAXELIB_HELP, args);
-		}
-		else {
-			controller.runCommand(args[0], Arrays.copyOfRange(args, 1, n));
-		}
-	}
-
-	private static void initilizeController() {
-		controller = new HaxelibController(createCommandCollection());
-	}
-
-	private static HaxelibCommandCollection createCommandCollection() {
+	private HaxelibCommandCollection createCommandCollection() {
 		HaxelibCommandCollection collection = new HaxelibCommandCollection();
 		collection.addCommand(HaxelibInstallCommand.class);
 		collection.addCommand(HaxelibUpdateCommand.class);
@@ -55,5 +34,12 @@ public class HaxelibClient {
 		return collection;
 	}
 
-
+	@Test
+	public void help() throws Exception {
+		HaxelibHelpCommand helpCommand = new HaxelibHelpCommand();
+		helpCommand.commands = createCommandCollection();
+		String actualResult = helpCommand.help();
+		String expectedResult = exec("haxelib", "help");
+		assertEquals("The files differ!", expectedResult, actualResult);
+	}
 }

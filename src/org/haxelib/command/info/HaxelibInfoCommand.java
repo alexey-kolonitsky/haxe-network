@@ -6,7 +6,7 @@ import org.haxelib.command.HaxelibCommands;
 import org.haxelib.command.ICommand;
 import org.haxelib.model.HaxelibEntity;
 import org.haxelib.model.HaxelibVersion;
-import org.haxelib.remote.HaxelibServer;
+import org.haxelib.core.HaxelibServer;
 
 /**
  * Haxe Library Manager 3.3.0 - (c)2006-2016 Haxe Foundation
@@ -25,18 +25,37 @@ public class HaxelibInfoCommand extends HaxelibBaseCommand implements ICommand {
 
 	@Override
 	public void run(String[] arguments) {
-		String libraryName = arguments[0];
-		HaxelibEntity result = server.get(libraryName);
-		println("Name: " + result.name, null);
-		println("Tags: " + result.tags, null);
-		println("Desc: " + result.description, null);
-		println("Website: " + result.url, null);
-		println("Licence: " + result.license, null);
-		println("Owner: " + result.owner, null);
-		println("Last version: " + result.lastVersion, null);
-
-		for (HaxelibVersion ver : result.versions) {
-			println("\t" + ver.dateString + " " + ver.name + " : " + ver.comment, null);
+		switch (arguments.length) {
+			case 1:
+				println(info(arguments[0]), null);
+				break;
+			default:
+				wrongFormatError();
+				break;
 		}
+	}
+
+	public String info(String libraryName) {
+		HaxelibEntity lib = server.get(libraryName);
+		if (lib == null) {
+			return "Error: No such Project : " + libraryName + "\n";
+		}
+		int tagsCount = lib.tags.size();
+		String tagsString = tagsCount > 0 ? lib.tags.get(0) : "";
+		for (int i = 1; i < tagsCount; i++)
+			tagsString += ", " + lib.tags.get(i);
+		String result = "Name: " + lib.name
+			+ "\nTags: " + tagsString
+			+ "\nDesc: " + lib.description
+			+ "\nWebsite: " + lib.url
+			+ "\nLicense: " + lib.license
+			+ "\nOwner: " + lib.owner
+			+ "\nVersion: " + lib.lastVersion
+			+ "\nReleases: ";
+
+		for (HaxelibVersion ver : lib.versions) {
+			result += "\n   " + ver.dateString + " " + ver.name + " : " + ver.comment;
+		}
+		return result + "\n";
 	}
 }

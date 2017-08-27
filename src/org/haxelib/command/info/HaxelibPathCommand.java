@@ -5,7 +5,7 @@ import org.haxelib.command.HaxelibCategories;
 import org.haxelib.command.HaxelibCommands;
 import org.haxelib.command.ICommand;
 import org.haxelib.core.HaxelibRepository;
-import org.haxelib.core.HaxelibException;
+import org.haxelib.core.data.HaxelibException;
 import org.haxelib.model.HaxelibEntity;
 
 /**

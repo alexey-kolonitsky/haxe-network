@@ -18,7 +18,7 @@ public class HaxelibConfigCommand extends HaxelibBaseCommand implements ICommand
 	public HaxelibConfigCommand() {
 		_name = HaxelibCommands.HAXELIB_CONFIG;
 		_category = HaxelibCategories.INFO;
-		_description = "display this list of options";
+		_description = "print the repository path";
 	}
 
 	@Override

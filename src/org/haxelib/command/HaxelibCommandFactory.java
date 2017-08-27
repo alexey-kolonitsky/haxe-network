@@ -4,7 +4,7 @@ import org.haxelib.command.info.*;
 import org.haxelib.command.basics.*;
 import org.haxelib.configuration.HaxelibConfigurator;
 import org.haxelib.core.HaxelibRepository;
-import org.haxelib.remote.HaxelibServer;
+import org.haxelib.core.HaxelibServer;
 
 import java.util.HashMap;
 
@@ -14,7 +14,6 @@ import java.util.HashMap;
 public class HaxelibCommandFactory {
 
 	private HaxelibCommandCollection commands;
-	private HashMap<String, ICommand> commandByNameMap;
 
 	//Injectable
 	public HaxelibConfigurator configurator;
@@ -22,26 +21,17 @@ public class HaxelibCommandFactory {
 	public HaxelibRepository core;
 
 	public HaxelibCommandFactory(HaxelibCommandCollection commands) {
-		commandByNameMap = new HashMap<String, ICommand>();
-		for (Class<ICommand> commandClass : commands.getCommands()) {
-			try {
-				ICommand command = commandClass.newInstance();
-				commandByNameMap.put(command.getName(), command);
-			}
-			catch (Exception ex) {
-				System.out.println("Internal error: can't instantiate command " + commandClass);
-			}
-		}
+		this.commands = commands;
 	}
 
 	public ICommand create(String name) {
-		if (commandByNameMap.containsKey(name)){
-			ICommand command = commandByNameMap.get(name);
+		if (commands.hasCommand(name)) {
+			ICommand command = commands.getCommand(name);
 			// injection for help command
 			switch (name) {
 				case HaxelibCommands.HAXELIB_HELP:
 					HaxelibHelpCommand helpCommand = (HaxelibHelpCommand) command;
-					helpCommand.commandByNameMap = commandByNameMap;
+					helpCommand.commands = commands;
 					break;
 				case HaxelibCommands.HAXELIB_CONFIG:
 					HaxelibConfigCommand configCommand = (HaxelibConfigCommand) command;
@@ -58,6 +48,10 @@ public class HaxelibCommandFactory {
 				case HaxelibCommands.HAXELIB_SEARCH:
 					HaxelibSearchCommand searchCommand = (HaxelibSearchCommand) command;
 					searchCommand.server = server;
+					break;
+				case HaxelibCommands.HAXELIB_USER:
+					HaxelibUserCommand userCommand = (HaxelibUserCommand) command;
+					userCommand.server = server;
 					break;
 				case HaxelibCommands.HAXELIB_INFO:
 					HaxelibInfoCommand infoCommand = (HaxelibInfoCommand) command;

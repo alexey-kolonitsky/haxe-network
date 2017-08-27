@@ -1,8 +1,6 @@
 package org.haxelib.command;
 
-import org.haxelib.core.HaxelibException;
-
-import java.util.ArrayList;
+import org.haxelib.core.data.HaxelibException;
 
 /**
  * Created by akalanitski on 07.08.2017.

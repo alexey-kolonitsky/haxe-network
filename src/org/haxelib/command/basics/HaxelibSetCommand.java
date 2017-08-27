@@ -4,9 +4,7 @@ import org.haxelib.command.HaxelibBaseCommand;
 import org.haxelib.command.HaxelibCategories;
 import org.haxelib.command.HaxelibCommands;
 import org.haxelib.command.ICommand;
-import org.haxelib.core.HaxelibException;
-
-import java.util.ArrayList;
+import org.haxelib.core.data.HaxelibException;
 
 /**
  * Created by akalanitski on 07.08.2017.
@@ -16,10 +14,5 @@ public class HaxelibSetCommand extends HaxelibBaseCommand implements ICommand {
 		_category = HaxelibCategories.BASE;
 		_name = HaxelibCommands.HAXELIB_SET;
 		_description = "set the current version for a library";
-	}
-
-	@Override
-	public void run(String[] arguments) throws HaxelibException {
-
 	}
 }
