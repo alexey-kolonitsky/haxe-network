@@ -14,7 +14,7 @@ public class HaxelibPathCommandTest extends CommandBaseTest {
 	@Test
 	public void path() throws Exception {
 		HaxelibPathCommand listCommand = new HaxelibPathCommand();
-		listCommand.core = createCore("C:\\alexey\\apps\\haxe\\lib\\");;
+		listCommand.core = createRepository("C:\\alexey\\apps\\haxe\\lib\\");;
 		String actualResult = listCommand.path("utest");
 		String expectedResult = exec("haxelib", "path", "utest");
 		assertEquals("The files differ!", expectedResult, actualResult);

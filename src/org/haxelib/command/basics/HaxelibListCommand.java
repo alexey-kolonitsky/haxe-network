@@ -16,7 +16,7 @@ import java.util.ArrayList;
  */
 public class HaxelibListCommand extends HaxelibBaseCommand implements ICommand {
 
-	public HaxelibRepository core;
+	public HaxelibRepository repo;
 
 	public HaxelibListCommand() {
 		_category = HaxelibCategories.BASE;
@@ -32,7 +32,7 @@ public class HaxelibListCommand extends HaxelibBaseCommand implements ICommand {
 
 	public String list() {
 		String result = "";
-		ArrayList<HaxelibEntity> list = core.list();
+		ArrayList<HaxelibEntity> list = repo.list();
 		for (HaxelibEntity entity : list) {
 			String libraryName = entity.name;
 			CurrentVersion current = entity.currentVersion;

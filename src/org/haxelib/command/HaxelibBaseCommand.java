@@ -56,28 +56,50 @@ public class HaxelibBaseCommand implements ICommand {
 		return _usage;
 	}
 
+
+	//---------------------------------
+	// output
+	//---------------------------------
+
+	protected String _output;
+
+	public String getOutput() {
+		return _output;
+	}
+
+
+	//---------------------------------
+	// Constructor
+	//---------------------------------
+
 	public HaxelibBaseCommand() {
+		_output = "";
 		_usage = HaxelibConstants.APPLICATION_COMMAND + " " + _name;
 	}
 
 	@Override
 	public void run(String[] arguments) throws HaxelibException {
-		println("{0}: Internal error. Command ''{1}'' is not implemented", new Object[]{HaxelibConstants.APPLICATION_COMMAND, _name});
+		println("{0}: Internal error. Command ''{1}'' is not implemented", HaxelibConstants.APPLICATION_COMMAND, _name);
 	}
 
 
 	public void internalError(String message, Exception exception) {
 		String str = "Internal error: " + message + exception.toString();
+		_output += str + "\n";
 		println(str, null);
 	}
 
 	public void wrongFormatError() {
 		String message = MessageFormat.format("{0} {1} Wrong format: ", HaxelibConstants.APPLICATION_COMMAND, _name);
+		_output += message + "\n";
 		System.out.println(message);
 	}
 
-	public void println(String message, Object[] params) {
-		message = MessageFormat.format(message, params);
+	public void println(String message, Object...params) {
+		MessageFormat temp = new MessageFormat(message);
+		message = temp.format(params);
+		_output += message + "\n";
 		System.out.println(message);
 	}
+
 }

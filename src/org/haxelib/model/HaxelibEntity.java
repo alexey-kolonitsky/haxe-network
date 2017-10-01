@@ -17,6 +17,7 @@
  */
 package org.haxelib.model;
 
+import com.github.zafarkhaja.semver.Version;
 import org.haxelib.core.data.CurrentVersion;
 import org.haxelib.core.data.HaxelibException;
 
@@ -46,7 +47,7 @@ public class HaxelibEntity extends HaxelibDependency {
 	public String description;
 	public String version;
 	public String lastVersion; //2.4
-	public HaxelibVersion[] versions;
+	public ArrayList<HaxelibVersion> versions;
 	public int downloads;
 
 	//-----------------------------------
@@ -89,12 +90,48 @@ public class HaxelibEntity extends HaxelibDependency {
 	}
 
 	public boolean hasVersion(String libraryVersion) {
-		if (versions == null || versions.length == 0)
+		if (versions == null || versions.size() == 0)
 			return false;
 
 		for (HaxelibVersion version : versions)
 			if (version.name.equals(libraryVersion))
 				return true;
 		return false;
+	}
+
+	public void removeVersion(String libraryVersion) {
+		HaxelibVersion version = getVersion(libraryVersion);
+		if (version != null) {
+			versions.remove(version);
+		}
+	}
+
+	public HaxelibVersion getVersion(String libraryVersion) {
+		for (HaxelibVersion version : versions)
+			if (version.name.equals(libraryVersion))
+				return version;
+		return null;
+	}
+
+	public HaxelibVersion getHigherVersion() {
+		HaxelibVersion result = null;
+		for (HaxelibVersion ver : versions) {
+			if (result == null) {
+				result = ver;
+				continue;
+			}
+			int i = compareVersions(ver, result);
+			if (i > 1) {
+				result = ver;
+				continue;
+			}
+		}
+		return result;
+	}
+
+	public int compareVersions(HaxelibVersion a, HaxelibVersion b) {
+		Version aVersion = Version.valueOf(a.name);
+		Version bVersion = Version.valueOf(b.name);
+		return aVersion.compareTo(bVersion);
 	}
 }

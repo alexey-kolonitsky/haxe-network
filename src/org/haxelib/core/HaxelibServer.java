@@ -73,13 +73,17 @@ public class HaxelibServer {
 		return createEntity((HashMap<String, Object>) result);
 	}
 
-	public InputStream download(String libraryName, String version) throws IOException {
+	public InputStream download(String libraryName, String version) {
 		String fileName = protocol.libraryArchiveName(libraryName, version);
-		URL url = new URL(host + fileURL + fileName);
-		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-		connection.setRequestMethod("GET");
-		InputStream in = connection.getInputStream();
-		return in;
+		try {
+			URL url = new URL(host + fileURL + fileName);
+			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+			connection.setRequestMethod("GET");
+			return connection.getInputStream();
+		}
+		catch (IOException exception) {
+			return null;
+		}
 	}
 
 
@@ -123,12 +127,12 @@ public class HaxelibServer {
 		return entity;
 	}
 
-	private HaxelibVersion[] createVersions(HashMap[] sourceArray) {
+	private ArrayList<HaxelibVersion> createVersions(HashMap[] sourceArray) {
 		int n = sourceArray.length;
-		HaxelibVersion[] result = new HaxelibVersion[n];
+		ArrayList<HaxelibVersion> result = new ArrayList<HaxelibVersion>(n);
 		for (int i = 0; i < n; i++) {
 			HashMap<String, Object> source = (HashMap<String, Object>) sourceArray[i];
-			result[i] = createVersion(source);;
+			result.add(i, createVersion(source));
 		}
 		return result;
 	}

@@ -14,7 +14,7 @@ public class HaxelibConfigCommandTest extends CommandBaseTest {
 	@Test
 	public void config() throws Exception {
 		HaxelibConfigCommand listCommand = new HaxelibConfigCommand();
-		listCommand.core = createCore("C:\\alexey\\apps\\haxe\\lib\\");;
+		listCommand.core = createRepository("C:\\alexey\\apps\\haxe\\lib\\");;
 		String actualResult = listCommand.config();
 		String expectedResult = exec("haxelib", "config");
 		assertEquals("The files differ!", expectedResult, actualResult);

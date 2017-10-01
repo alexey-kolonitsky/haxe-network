@@ -13,6 +13,9 @@ import javax.json.*;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * Created by akalanitski on 18.08.2017.
@@ -59,6 +62,14 @@ public class HaxelibRepository {
 	 * List of HaxelibEntities for each installed library.
 	 */
 	public ArrayList<HaxelibEntity> list() {
+		_libs.sort(new Comparator<HaxelibEntity>() {
+			@Override
+			public int compare(HaxelibEntity o1, HaxelibEntity o2) {
+				String a = o1.name.toUpperCase();
+				String b = o2.name.toUpperCase();
+				return a.compareTo(b);
+			}
+		});
 		return _libs;
 	}
 
@@ -74,10 +85,18 @@ public class HaxelibRepository {
 	public HaxelibRepository(String repositoryPath) {
 		_repository = new File(repositoryPath);
 		if (!_repository.exists()) {
-			System.out.println("Haxelib directory doesn't exists");
+			boolean isSuccessfull = false;
+			try {
+				isSuccessfull = _repository.mkdir();
+			} catch (SecurityException exception){
+				System.out.println("Haxelib repository couldn't be created at `" + repositoryPath + "`");
+			}
+			if (!isSuccessfull) {
+				System.out.println("Haxelib repository is unsuccessfully created at `" + repositoryPath + "`");
+			}
 		}
 		if (_repository.isFile()) {
-			System.out.println("Haxelib should be not Directory");
+			System.out.println("Haxelib should be a Directory");
 		}
 		protocol = new HaxelibProtocol();
 	}
@@ -96,6 +115,72 @@ public class HaxelibRepository {
 	// Library API
 	//--------------------------------------------------------------------------
 
+	public void install(String libraryName, String libraryVersion, InputStream inputStream) throws HaxelibException {
+		String homeDirectoryPath = createLibraryPath(libraryName, libraryVersion);
+		File homeDirectory = new File(homeDirectoryPath);
+		homeDirectory.mkdirs();
+		try {
+			BufferedInputStream buf = new BufferedInputStream(inputStream);
+			buf.mark(Integer.MAX_VALUE);
+
+			// Find basePath inside of archive
+			String basePath = null;
+			ZipInputStream zis = new ZipInputStream(buf);
+			ZipEntry zipEntry = zis.getNextEntry();
+			while(zipEntry != null) {
+				if (!zipEntry.isDirectory()) {
+					KPath fileName = new KPath(zipEntry.getName());
+					if (fileName.last().equals(HaxelibConstants.LIBRARY_DESCRIPTION_FILE_NAME)) {
+						if (KString.isEmpty(basePath)) {
+							basePath = fileName.getPath();
+						}
+						else {
+							System.out.println("Two haxelib.json files in one archive");
+							return;
+						}
+					}
+				}
+				zipEntry = zis.getNextEntry();
+			}
+
+			// copy to destination folder
+			byte[] buffer = new byte[1024];
+			buf.reset();
+			zis = new ZipInputStream(buf);
+			zipEntry = zis.getNextEntry();
+			while(zipEntry != null) {
+				if (!zipEntry.isDirectory()) {
+					KPath kp = new KPath(homeDirectoryPath);
+					String fileName = zipEntry.getName();
+					if (fileName.contains(basePath)) {
+						kp.append(fileName.substring(basePath.length()));
+					}
+					File unpackedFile = new File(kp.toString());
+					File unpackedFileParent = new File(unpackedFile.getParent());
+					if (!unpackedFileParent.exists())
+						unpackedFileParent.mkdirs();
+
+					System.out.println("Unpack file: " + fileName + " to " + homeDirectoryPath);
+					FileOutputStream fos = new FileOutputStream(unpackedFile);
+					int len;
+					while ((len = zis.read(buffer)) > 0) {
+						fos.write(buffer, 0, len);
+					}
+					fos.close();
+				}
+				zipEntry = zis.getNextEntry();
+			}
+			buf.close();
+
+			// add library to the cash
+			add(libraryName);
+			// add current version file
+			setVersion(libraryName, libraryVersion);
+		} catch (IOException exception) {
+			System.out.println(exception);
+		}
+	}
+
 	public HaxelibEntity get(String libraryName) throws HaxelibException {
 		if (!protocol.isLibraryName(libraryName))
 			throw HaxelibException.InvalidLibraryName(libraryName);
@@ -111,14 +196,17 @@ public class HaxelibRepository {
 		if (!protocol.isLibraryName(libraryName))
 			throw HaxelibException.InvalidLibraryName(libraryName);
 
-		HaxelibEntity lib = createLibrary(libraryName);
+		HaxelibEntity lib = get(libraryName);
+		if (lib == null) {
+			lib = createLibrary(libraryName);
+			_libs.add(lib);
+		}
+
 		lib.versions = scanLibraryHome(lib.homeDirectory);
 		try {
 			lib.currentVersion = getCurrentVersion(libraryName, lib);
 		} catch (HaxelibException exception) {
 			lib.addError(exception);
-		} finally {
-			_libs.add(lib);
 		}
 	}
 
@@ -183,13 +271,17 @@ public class HaxelibRepository {
 		return currentVersion;
 	}
 
-	public void setVersion(String libraryName, String version) throws HaxelibException, IOException{
+	public void setVersion(String libraryName, String version) throws HaxelibException {
 		HaxelibEntity lib = get(libraryName);
 		if (lib == null)
 			throw HaxelibException.LibraryNotInstalled(libraryName);
 		KPath versionFilePath = new KPath(lib.homeDirectoryPath, HaxelibConstants.LIBRARY_CURRENT_VERSION_FILE_NAME);
 		KFile file = new KFile(versionFilePath.toString());
-		file.setContent(version);
+		try {
+			file.setContent(version);
+		} catch (IOException exception) {
+			throw HaxelibException.CantChangeLibraryVersion(libraryName, version, exception);
+		}
 		CurrentVersion currentVersion = new CurrentVersion();
 		currentVersion.version = version;
 		currentVersion.path = createLibraryPath(libraryName, version);
@@ -197,7 +289,7 @@ public class HaxelibRepository {
 		lib.currentVersion = currentVersion;
 	}
 
-	public void remoteVersion(String libraryName, String version) throws HaxelibException {
+	public void removeVersion(String libraryName, String version) throws HaxelibException {
 		HaxelibEntity lib = get(libraryName);
 		if (lib == null)
 			throw HaxelibException.LibraryNotInstalled(libraryName);
@@ -206,6 +298,7 @@ public class HaxelibRepository {
 		String libraryPath = createLibraryPath(libraryName, version);
 		KFile directory = new KFile(libraryPath);
 		directory.delete();
+		lib.removeVersion(version);
 	}
 
 	public String createLibraryPath(String libraryName, String version) {
@@ -232,19 +325,14 @@ public class HaxelibRepository {
 		return result;
 	}
 
-	private HaxelibVersion[] scanLibraryHome(File libHomeDirectory) {
-		ArrayList<HaxelibVersion> versions = new ArrayList<HaxelibVersion>();
+	private ArrayList<HaxelibVersion> scanLibraryHome(File libHomeDirectory) {
+		ArrayList<HaxelibVersion> result = new ArrayList<HaxelibVersion>();
 		File[] versionDirectories = libHomeDirectory.listFiles();
 		for (File versionDir : versionDirectories) {
 			if (versionDir.isDirectory()) {
 				HaxelibVersion version = createVersionFromDir(versionDir);
-				versions.add(version);
+				result.add(version);
 			}
-		}
-		int n = versions.size();
-		HaxelibVersion[] result = new HaxelibVersion[n];
-		for (int i = 0; i < n; i++) {
-			result[i] = versions.get(i);
 		}
 		return result;
 	}

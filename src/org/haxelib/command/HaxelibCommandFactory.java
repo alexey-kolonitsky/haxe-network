@@ -6,8 +6,6 @@ import org.haxelib.configuration.HaxelibConfigurator;
 import org.haxelib.core.HaxelibRepository;
 import org.haxelib.core.HaxelibServer;
 
-import java.util.HashMap;
-
 /**
  * Created by akalanitski on 18.08.2017.
  */
@@ -39,7 +37,7 @@ public class HaxelibCommandFactory {
 					break;
 				case HaxelibCommands.HAXELIB_LIST:
 					HaxelibListCommand listCommand = (HaxelibListCommand) command;
-					listCommand.core = core;
+					listCommand.repo = core;
 					break;
 				case HaxelibCommands.HAXELIB_PATH:
 					HaxelibPathCommand pathCommand = (HaxelibPathCommand) command;
@@ -59,12 +57,12 @@ public class HaxelibCommandFactory {
 					break;
 				case HaxelibCommands.HAXELIB_REMOVE:
 					HaxelibRemoveCommand removeCommand = (HaxelibRemoveCommand) command;
-					removeCommand.core = core;
+					removeCommand.repo = core;
 					break;
 				case HaxelibCommands.HAXELIB_INSTALL:
 					HaxelibInstallCommand installCommand = (HaxelibInstallCommand) command;
 					installCommand.server = server;
-					installCommand.core = core;
+					installCommand.repo = core;
 					break;
 			}
 			return command;

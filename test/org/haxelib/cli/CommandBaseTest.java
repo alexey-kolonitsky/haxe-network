@@ -18,7 +18,7 @@ import java.util.List;
 public class CommandBaseTest {
 
 
-	public HaxelibRepository createCore(String repositoryPath) {
+	public static HaxelibRepository createRepository(String repositoryPath) {
 		HaxelibRepository core = new HaxelibRepository(repositoryPath);
 		try {
 			core.scanRepository();
@@ -30,12 +30,12 @@ public class CommandBaseTest {
 		return core;
 	}
 
-	public HaxelibServer createService() {
+	public static HaxelibServer createService() {
 		HaxelibServer server = new HaxelibServer("lib.haxe.org", "80", "", "3.0", "index.n");
 		return server;
 	}
 
-	public String exec(String... arguments) throws IOException {
+	public static String exec(String... arguments) throws IOException {
 		List t = Arrays.asList(arguments);
 		ArrayList<String> list = new ArrayList<String>(t);
 		Process process = new ProcessBuilder(list).start();
