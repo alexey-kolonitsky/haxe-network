@@ -1,6 +1,10 @@
-haxe-network
-============
-implementation of Haxe serialization protocol for java. Currently it support 
+Haxe has really amaizing data serialization/deserialization 
+mechanism. This library provide the most common abilities to use Java with Haxe 
+front-end or backend.
+
+Networking
+----------
+Currently it support 
 serialization of primitive types and common classes supported both java and haxe i.e.
  * int
  * float
@@ -8,9 +12,12 @@ serialization of primitive types and common classes supported both java and haxe
  * strings
  * date
  * arrays and ArrayList
- * Objects
+ * Maps
+ * Objects 
+ * Classes
 
 and a few special values
+ * 0
  * null
  * NaN
  * positive and negative infinity

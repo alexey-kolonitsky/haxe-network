@@ -1,10 +1,11 @@
+import jdk.internal.org.objectweb.asm.tree.analysis.Value;
+import org.hamcrest.CoreMatchers;
 import org.haxe.net.HaxeDeserializer;
 import org.haxe.net.HaxeSerializer;
+import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
+import java.util.*;
 
 import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.assertArrayEquals;
@@ -141,5 +142,84 @@ public class HaxeSerilizationTest {
 		HaxeDeserializer deserializer = new HaxeDeserializer(s);
 		Calendar value = (Calendar)deserializer.deserialize();
 		assertEquals(originalValue.getTimeInMillis(), value.getTimeInMillis());
+	}
+
+	@Test
+	public void testList() throws Exception {
+		HaxeSerializer serializer = new HaxeSerializer();
+		ArrayList<Integer> originalValue = new ArrayList<Integer>();
+		originalValue.add(10);
+		originalValue.add(11);
+		originalValue.add(12);
+		serializer.serialize(originalValue);
+		StringBuffer s = serializer.getStringBuffer();
+
+		HaxeDeserializer deserializer = new HaxeDeserializer(s);
+		ArrayList<Integer> value = (ArrayList<Integer>)deserializer.deserialize();
+		Assert.assertThat(value, CoreMatchers.hasItems(10, 11, 12));
+	}
+
+	@Test
+	public void testStringMap() throws Exception {
+		HaxeSerializer serializer = new HaxeSerializer();
+		HashMap<String, Integer> originalValue = new HashMap<String, Integer>();
+		originalValue.put("first", 10);
+		originalValue.put("second", 11);
+		originalValue.put("third", 12);
+		serializer.serialize(originalValue);
+		StringBuffer s = serializer.getStringBuffer();
+
+		HaxeDeserializer deserializer = new HaxeDeserializer(s);
+		HashMap<String, Integer> value = (HashMap<String, Integer>)deserializer.deserialize();
+		Assert.assertTrue(value.containsKey("third"));
+	}
+
+	@Test
+	public void testIntMap() throws Exception {
+		HaxeSerializer serializer = new HaxeSerializer();
+		HashMap<Integer, Integer> originalValue = new HashMap<Integer, Integer>();
+		originalValue.put(45, 10);
+		originalValue.put(13, 11);
+		originalValue.put(89, 12);
+		serializer.serialize(originalValue);
+		StringBuffer s = serializer.getStringBuffer();
+
+		HaxeDeserializer deserializer = new HaxeDeserializer(s);
+		HashMap<Integer, Integer> value = (HashMap<Integer, Integer>)deserializer.deserialize();
+		Assert.assertTrue(value.containsKey(89));
+	}
+
+	@Test
+	public void testObjectMap() throws Exception {
+		HaxeSerializer serializer = new HaxeSerializer();
+		HashMap<Object, Integer> originalValue = new HashMap<Object, Integer>();
+		ValueClass first = new ValueClass("first");
+		originalValue.put(first, 10);
+		originalValue.put(new ValueClass("second"), 11);
+		originalValue.put(new ValueClass("third"), 12);
+		serializer.serialize(originalValue);
+		StringBuffer s = serializer.getStringBuffer();
+
+		HaxeDeserializer deserializer = new HaxeDeserializer(s);
+		HashMap<Object, Integer> value = (HashMap<Object, Integer>)deserializer.deserialize();
+		Assert.assertTrue(value.containsKey(first));
+	}
+
+	@Test
+	public void testException() throws Exception {
+
+	}
+
+	@Test
+	public void testClass() throws Exception {
+
+	}
+
+	@Test
+	public void deserializeData() throws Exception {
+		StringBuffer s = new StringBuffer("ay7:alexey2y32:5cbcc03c43036744a2cc7dfb391988acy24:alexey1%40kolonitsky.comy20:Alexey1%20Kolonitskyh");
+		HaxeDeserializer deserializer = new HaxeDeserializer(s);
+		Object value = deserializer.deserialize();
+		assertEquals(1, 1);
 	}
 }

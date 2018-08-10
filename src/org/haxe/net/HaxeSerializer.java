@@ -220,6 +220,15 @@ public class HaxeSerializer {
       return;
     }
 
+    if (value instanceof List) {
+      serializeList((List)value);
+      return;
+    }
+    if (value instanceof Map) {
+      serializeMap((Map)value);
+      return;
+    }
+
     if (value instanceof Object) {
       Class valueClass = value.getClass();
       if (valueClass.isArray()) {
@@ -259,6 +268,35 @@ public class HaxeSerializer {
     for (int i = 0; i < length; i++) {
       Object arrayElement = Array.get(value, i);
       serialize(arrayElement);
+    }
+    buf.append('h');
+  }
+
+  public void serializeList(List value) throws Exception  {
+    buf.append('l');
+    for (int i = 0; i < value.size(); i++) {
+      Object arrayElement = value.get(i);
+      serialize(arrayElement);
+    }
+    buf.append('h');
+  }
+
+  public void serializeMap(Map value) throws Exception  {
+    Object[] keys = value.keySet().toArray();
+    Object key = keys[0];
+    if (key instanceof String) buf.append('b');
+    else if (key instanceof Integer) buf.append('q');
+    else if (key instanceof Objects) buf.append('M');
+
+    for (int i = 0; i < keys.length; i++) {
+      key = keys[i];
+      if (key instanceof Integer) {
+	      buf.append(':');
+	      buf.append((Integer)key);
+      } else {
+        serialize(key);
+      }
+      serialize(value.get(key));
     }
     buf.append('h');
   }
