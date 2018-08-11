@@ -5,20 +5,20 @@ corrections to use it without the rest of library.
 
 Haxe Messaging Format
 ---------------------
-Full definition of Haxe Messaging Format available in the [documentation](https://haxe.org/manual/std-serialization-format.html). 
-Threre are list of types supported for serialization/deserialization with av4j.
+Full definition of Haxe Messaging Format available in the 
+[documentation](https://haxe.org/manual/std-serialization-format.html). Threre 
+is full list of types supported for serialization/deserialization with 
+haxe-networking.
 
-|---------------------------------------------|
-| *Primitive* | *Complex*  | *Special Values* |
-|---------------------------------------------|
-| int         | String     | 0                |
-| float       | Date       | NaN              |
-| boolean     | Array      | null             |
-|             | List       | +Infinity        |
-|             | Map*       | -Infinity        |
-|             | Objects    |                  |
-|             | Exceptions |                  |
-|---------------------------------------------|
+| **Primitive** | **Complex**  | **Special Values** |
+|---------------|--------------|--------------------|
+| int           | String       | 0                  |
+| float         | Date         | NaN                |
+| boolean       | Array        | null               |
+|               | List         | +Infinity          |
+|               | Map*         | -Infinity          |
+|               | Objects      |                    |
+|               | Exceptions   |                    |
 
 How to use
 ----------
