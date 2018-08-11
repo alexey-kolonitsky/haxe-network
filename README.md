@@ -1,26 +1,24 @@
-Haxe has really amaizing data serialization/deserialization 
+Haxe has really amazing data serialization/deserialization 
 mechanism. This library provide the most common abilities to use Java with Haxe 
-front-end or backend.
+front-end or backend. This is mostly copy-paste from Haxe Standard Library with
+corrections to use it without the rest of library.
 
-Networking
-----------
-Currently it support 
-serialization of primitive types and common classes supported both java and haxe i.e.
- * int
- * float
- * boolean
- * strings
- * date
- * arrays and ArrayList
- * Maps
- * Objects 
- * Classes
+Haxe Messaging Format
+---------------------
+Full definition of Haxe Messaging Format available in the [documentation](https://haxe.org/manual/std-serialization-format.html). 
+Threre are list of types supported for serialization/deserialization with av4j.
 
-and a few special values
- * 0
- * null
- * NaN
- * positive and negative infinity
+|---------------------------------------------|
+| *Primitive* | *Complex*  | *Special Values* |
+|---------------------------------------------|
+| int         | String     | 0                |
+| float       | Date       | NaN              |
+| boolean     | Array      | null             |
+|             | List       | +Infinity        |
+|             | Map*       | -Infinity        |
+|             | Objects    |                  |
+|             | Exceptions |                  |
+|---------------------------------------------|
 
 How to use
 ----------
