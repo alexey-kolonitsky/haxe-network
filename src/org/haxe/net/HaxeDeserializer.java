@@ -61,31 +61,7 @@ public class HaxeDeserializer {
 			case 'a':
 				return readArray();
 			case 'o':
-				HashMap o = new HashMap<String, Object>();
-				cache.add(o);
-				while( true ) {
-					if(isEof(pos)) {
-						throw new Exception("\nDeserilization exception. Unexpected EoL");
-					}
-					char marker = get(pos);
-					if( marker == 'g') {
-						pos++;
-						break;
-					}
-					String fieldName = null;
-					if (marker == 'y') {
-						pos++;
-						fieldName = readString();
-					} else if (marker == 'R') {
-						pos++;
-						fieldName = readStringCashReference();
-					}
-					if (fieldName == null)
-						throw new Exception("\n" + buf.toString() + "\nDeserilization exception. Position " + pos + ". Object field is NULL. Marker '" + marker + " has been found.");
-					Object fieldValue = deserialize();
-					o.put(fieldName, fieldValue);
-				}
-				return o;
+				return readObject();
 			case 'r':
 				return readObjectCashReference();
 			case 'R':
@@ -206,8 +182,7 @@ public class HaxeDeserializer {
 			}
 			if( get(pos) == 'g')
 				break;
-			pos++;
-			String fieldName  = readString();
+			String fieldName  = readStringOrReference();
 			if( !(fieldName instanceof String) )
 				throw new Exception("Invalid object key");
 			Object fieldValue = deserialize();
@@ -368,16 +343,50 @@ public class HaxeDeserializer {
 		return e;
 	}
 
+	private String readStringOrReference() throws Exception {
+		char marker = get(pos);
+		pos++;
+		switch(marker) {
+			case 'y': return readString();
+			case 'R': return readStringCashReference();
+		}
+		return null;
+	}
+
 	private Object readClass() throws Exception{
-		String className = readString();
+		String className = readStringOrReference();
 		Class<?> cl = resolver.resolveClass(className);
 		if( cl == null ) {
-			throw new Exception("Class not found " + className);
+			throw new Exception(String.format("Definition of class `%s` not found.", className));
 		}
-		Constructor<?> ctor = cl.getConstructor(String.class);
+		Constructor<?> ctor = cl.getConstructor();
+		if (ctor.getParameterCount() > 0) {
+			throw new Exception(String.format("Class `%s` must have default constructor without arguments.", className));
+		}
 		Object o = ctor.newInstance();
 		cache.add(o);
 		unserializeObject(o);
+		return o;
+	}
+
+	private Object readObject() throws Exception {
+		HashMap o = new HashMap<String, Object>();
+		cache.add(o);
+		while( true ) {
+			if(isEof(pos)) {
+				throw new Exception("\nDeserilization exception. Unexpected EoL");
+			}
+			char marker = get(pos);
+			if( marker == 'g') {
+				pos++;
+				break;
+			}
+			String fieldName = readStringOrReference();
+			if (fieldName == null)
+				throw new Exception("\n" + buf.toString() + "\nDeserilization exception. Position " + pos + ". Object field is NULL. Marker '" + marker + " has been found.");
+			Object fieldValue = deserialize();
+			o.put(fieldName, fieldValue);
+		}
 		return o;
 	}
 
@@ -385,8 +394,9 @@ public class HaxeDeserializer {
 		HashMap<Object, Object> objectMap = new HashMap<Object, Object>();
 		cache.add(objectMap);
 		while(get(pos) != 'h') {
-			Object objectKey = deserialize();
-			objectMap.put(objectKey, deserialize());
+			Object key = deserialize();
+			Object value = deserialize();
+			objectMap.put(key, value);
 		}
 		pos++;
 		return objectMap;

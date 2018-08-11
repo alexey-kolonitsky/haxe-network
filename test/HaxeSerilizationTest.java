@@ -9,6 +9,7 @@ import java.util.*;
 
 import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -192,27 +193,55 @@ public class HaxeSerilizationTest {
 	@Test
 	public void testObjectMap() throws Exception {
 		HaxeSerializer serializer = new HaxeSerializer();
+		ValueClass first = new ValueClass();
+		first.value = "first";
+		ValueClass second = new ValueClass();
+		second.value = "second";
+		ValueClass third = new ValueClass();
+		third.value = "third";
+
 		HashMap<Object, Integer> originalValue = new HashMap<Object, Integer>();
-		ValueClass first = new ValueClass("first");
 		originalValue.put(first, 10);
-		originalValue.put(new ValueClass("second"), 11);
-		originalValue.put(new ValueClass("third"), 12);
+		originalValue.put(second, 11);
+		originalValue.put(third, 12);
 		serializer.serialize(originalValue);
 		StringBuffer s = serializer.getStringBuffer();
 
 		HaxeDeserializer deserializer = new HaxeDeserializer(s);
 		HashMap<Object, Integer> value = (HashMap<Object, Integer>)deserializer.deserialize();
-		Assert.assertTrue(value.containsKey(first));
+		for (Object vKey : value.keySet()) {
+			int oValue = originalValue.get(vKey);
+			int vValue = value.get(vKey);
+			Assert.assertTrue(oValue == vValue);
+		}
 	}
 
-	@Test
+	@Test()
 	public void testException() throws Exception {
+		Exception originalValue = new Exception("My Exception");
+		HaxeSerializer serializer = new HaxeSerializer();
+		serializer.serialize(originalValue);
 
+		StringBuffer s = serializer.getStringBuffer();
+		HaxeDeserializer deserializer = new HaxeDeserializer(s);
+		try {
+			deserializer.deserialize();
+		}catch (Exception e) {
+			assertTrue(e.getMessage().equals(originalValue.getMessage()));
+		}
 	}
 
 	@Test
 	public void testClass() throws Exception {
+		ValueClass originalValue = new ValueClass();
+		originalValue.value = "Hello World!";
+		HaxeSerializer serializer = new HaxeSerializer();
+		serializer.serialize(originalValue);
 
+		StringBuffer s = serializer.getStringBuffer();
+		HaxeDeserializer deserializer = new HaxeDeserializer(s);
+		ValueClass value = (ValueClass)deserializer.deserialize();
+		assertEquals(originalValue.value, value.value);
 	}
 
 	@Test
@@ -223,3 +252,4 @@ public class HaxeSerilizationTest {
 		assertEquals(1, 1);
 	}
 }
+
