@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/alexey-kolonitsky/haxe-network.svg?branch=master)](https://travis-ci.org/alexey-kolonitsky/haxe-network)
+[![codecov](https://codecov.io/gh/alexey-kolonitsky/haxe-network/branch/master/graph/badge.svg)](https://codecov.io/gh/alexey-kolonitsky/haxe-network)
+
 Haxe has really amazing data serialization/deserialization 
 mechanism. This library provide the most common abilities to use Java with Haxe 
 front-end or backend. This is mostly copy-paste from Haxe Standard Library with
