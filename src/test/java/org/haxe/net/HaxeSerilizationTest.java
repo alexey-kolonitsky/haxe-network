@@ -1,7 +1,8 @@
-import jdk.internal.org.objectweb.asm.tree.analysis.Value;
+package test;
+
 import org.hamcrest.CoreMatchers;
-import org.haxe.net.HaxeDeserializer;
-import org.haxe.net.HaxeSerializer;
+import main.test.net.HaxeDeserializer;
+import main.test.net.HaxeSerializer;
 import org.junit.Assert;
 import org.junit.Test;
 

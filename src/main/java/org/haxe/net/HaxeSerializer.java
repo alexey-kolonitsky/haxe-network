@@ -1,7 +1,6 @@
-package org.haxe.net;
+package main.java;
 
 import java.lang.reflect.Array;
-import java.lang.reflect.Executable;
 import java.lang.reflect.Field;
 import java.util.*;
 

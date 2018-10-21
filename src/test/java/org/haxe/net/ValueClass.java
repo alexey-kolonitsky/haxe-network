@@ -1,3 +1,5 @@
+package test;
+
 public class ValueClass {
 	public String value;
 

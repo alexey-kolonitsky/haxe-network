@@ -1,4 +1,4 @@
-package org.haxe.net;
+package main.java;
 
 /**
  * Created by akalanitski on 24.07.2017.
