@@ -1,4 +1,4 @@
-package test;
+package org.haxe.net;
 
 public class ValueClass {
 	public String value;

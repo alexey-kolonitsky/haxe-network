@@ -1,4 +1,4 @@
-package test;
+package org.haxe.net;
 
 /**
  * Created by akalanitski on 11.08.2018.

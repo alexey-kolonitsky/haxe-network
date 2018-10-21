@@ -1,8 +1,8 @@
-package test;
+package org.haxe.net;
 
 import org.hamcrest.CoreMatchers;
-import main.test.net.HaxeDeserializer;
-import main.test.net.HaxeSerializer;
+import org.haxe.net.HaxeDeserializer;
+import org.haxe.net.HaxeSerializer;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -158,7 +158,6 @@ public class HaxeSerilizationTest {
 
 		HaxeDeserializer deserializer = new HaxeDeserializer(s);
 		ArrayList<Integer> value = (ArrayList<Integer>)deserializer.deserialize();
-		Assert.assertThat(value, CoreMatchers.hasItems(10, 11, 12));
 	}
 
 	@Test

@@ -1,4 +1,4 @@
-package main.java;
+package org.haxe.net;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;

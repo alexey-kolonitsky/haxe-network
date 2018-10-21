@@ -1,4 +1,4 @@
-package main.java;
+package org.haxe.net;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
